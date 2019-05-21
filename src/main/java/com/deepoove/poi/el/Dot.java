@@ -39,13 +39,8 @@ public class Dot {
 	private Dot target;
 	private String key;
 
-	final static String EL_REGEX;
-	final static Pattern EL_PATTERN;
-
-	static {
-		EL_REGEX = "^[\\w+(\\.\\w+)|\u4e00-\u9fa5]*$";
-		EL_PATTERN = Pattern.compile(EL_REGEX);
-	}
+	// EL通用正则
+	final static Pattern EL_PATTERN = Pattern.compile("^[^\\.]+(\\.[^\\\\.]+)*$");
 
 	public Dot(String el) {
 		ObjectUtils.requireNonNull(el, "EL cannot be null.");

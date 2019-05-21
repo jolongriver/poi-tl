@@ -43,18 +43,15 @@ import com.deepoove.poi.util.RegexUtils;
  * @version 1.4.0
  */
 public class TemplateVisitor implements Visitor {
-	private static final Logger LOGGER = LoggerFactory.getLogger(TemplateVisitor.class);
+	private static Logger logger = LoggerFactory.getLogger(TemplateVisitor.class);
 
 	private Configure config;
 	private List<ElementTemplate> eleTemplates;
 	
-	/**
-	 * 使用正则表达式解析
-	 */
 	private Pattern templatePattern;
     private Pattern gramerPattern;
 
-	static final String FORMAT_TEMPLATE = "{0}{1}[\\w+(\\.\\w+)|\u4e00-\u9fa5]*{2}";
+	static final String FORMAT_TEMPLATE = "{0}{1}{2}{3}";
     static final String FORMAT_GRAMER = "({0})|({1})";
 
 	public TemplateVisitor(Configure config) {
@@ -147,7 +144,7 @@ public class TemplateVisitor implements Visitor {
 	}
 
 	private <T> ElementTemplate parseTemplateFactory(String text, T obj) {
-		LOGGER.debug("Resolve text: {}, and create ElementTemplate", text);
+		logger.debug("Resolve text: {}, and create ElementTemplate", text);
 		// temp ,future need to word analyze
 		if (templatePattern.matcher(text).matches()) {
 			String tag = gramerPattern.matcher(text).replaceAll("").trim();
@@ -167,7 +164,7 @@ public class TemplateVisitor implements Visitor {
         String suffixRegex = RegexUtils.escapeExprSpecialWord(config.getGramerSuffix());
 
         templatePattern = Pattern
-                .compile(MessageFormat.format(FORMAT_TEMPLATE, prefixRegex, signRegex, suffixRegex));
+                .compile(MessageFormat.format(FORMAT_TEMPLATE, prefixRegex, signRegex, config.getReg(), suffixRegex));
         gramerPattern = Pattern.compile(MessageFormat.format(FORMAT_GRAMER , prefixRegex, suffixRegex));
     }
 

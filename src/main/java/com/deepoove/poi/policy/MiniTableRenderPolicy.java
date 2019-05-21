@@ -32,6 +32,7 @@ import com.deepoove.poi.data.MiniTableRenderData;
 import com.deepoove.poi.data.RowRenderData;
 import com.deepoove.poi.data.TextRenderData;
 import com.deepoove.poi.data.style.TableStyle;
+import com.deepoove.poi.exception.RenderException;
 import com.deepoove.poi.template.run.RunTemplate;
 import com.deepoove.poi.util.ObjectUtils;
 import com.deepoove.poi.util.StyleUtils;
@@ -49,13 +50,12 @@ public class MiniTableRenderPolicy extends AbstractRenderPolicy {
     protected boolean validate(Object data) {
         if (null == data) return false;
         if (!(data instanceof MiniTableRenderData)) {
-            logger.error("Error datamodel: correct type is MiniTableRenderData, but is "
+            throw new RenderException("Error datamodel: correct type is MiniTableRenderData, but is "
                     + data.getClass());
-            return false;
         }
         if (!((MiniTableRenderData) data).isSetBody()
                 && !((MiniTableRenderData) data).isSetHeader()) {
-            logger.error("Empty MiniTableRenderData datamodel: {}", data);
+            logger.debug("Empty MiniTableRenderData datamodel: {}", data);
             return false;
         }
         return true;
@@ -155,8 +155,8 @@ public class MiniTableRenderPolicy extends AbstractRenderPolicy {
             String cellText = cellData.getText();
             if (StringUtils.isBlank(cellText)) continue;
 
-            String[] fragment = cellText.split(TextRenderPolicy.REGEX_LINE_CHARACTOR);
-            if (null == fragment) continue;
+            String[] fragment = cellText.split(TextRenderPolicy.REGEX_LINE_CHARACTOR, -1);
+            if (null == fragment || fragment.length <= 0) continue;
 
             // 处理单元格数据
             XWPFParagraph par;

@@ -15,8 +15,8 @@
  */
 package com.deepoove.poi.policy;
 
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,29 +52,22 @@ public class DocxRenderPolicy extends AbstractRenderPolicy {
 
         List<NiceXWPFDocument> docMerges = getMergedDocxs((DocxRenderData) data,
                 template.getConfig());
-        try {
-            doc = doc.merge(docMerges, run);
-        } catch (Exception e) {
-            logger.error("merge docx error", e);
-        }
+        doc = doc.merge(docMerges, run);
 
         template.reload(doc);
     }
 
-    private List<NiceXWPFDocument> getMergedDocxs(DocxRenderData data, Configure configure) {
+    private List<NiceXWPFDocument> getMergedDocxs(DocxRenderData data, Configure configure)
+            throws IOException {
         List<NiceXWPFDocument> docs = new ArrayList<NiceXWPFDocument>();
-        File docx = data.getDocx();
+        byte[] docx = data.getDocx();
         List<?> dataList = data.getDataList();
         if (null == dataList || dataList.isEmpty()) {
-            try {
-                // 待合并的文档不是模板
-                docs.add(new NiceXWPFDocument(new FileInputStream(docx)));
-            } catch (Exception e) {
-                logger.error("Cannot get the merged docx.", e);
-            }
+            // 待合并的文档不是模板
+            docs.add(new NiceXWPFDocument(new ByteArrayInputStream(docx)));
         } else {
             for (int i = 0; i < dataList.size(); i++) {
-                XWPFTemplate temp = XWPFTemplate.compile(docx, configure);
+                XWPFTemplate temp = XWPFTemplate.compile(new ByteArrayInputStream(docx), configure);
                 temp.render(dataList.get(i));
                 docs.add(temp.getXWPFDocument());
             }

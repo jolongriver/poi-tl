@@ -24,6 +24,7 @@ import org.apache.poi.xwpf.usermodel.XWPFRun;
 
 import com.deepoove.poi.XWPFTemplate;
 import com.deepoove.poi.data.PictureRenderData;
+import com.deepoove.poi.exception.RenderException;
 import com.deepoove.poi.template.run.RunTemplate;
 
 public class PictureRenderPolicy extends AbstractRenderPolicy {
@@ -35,9 +36,8 @@ public class PictureRenderPolicy extends AbstractRenderPolicy {
         if (null == data) return false;
 
         if (!(data instanceof PictureRenderData)) {
-            logger.error("Error datamodel: correct type is PictureRenderData, but is "
+            throw new RenderException("Error datamodel: correct type is PictureRenderData, but is "
                     + data.getClass());
-            return false;
         }
 
         return (null != ((PictureRenderData) data).getData()
@@ -48,8 +48,6 @@ public class PictureRenderPolicy extends AbstractRenderPolicy {
     public void doRender(RunTemplate runTemplate, Object model, XWPFTemplate template)
             throws Exception {
     	XWPFRun run = runTemplate.getRun();
-        // 如果出现异常，图片不存在，优先清空标签
-        clearPlaceholder(run);
 
         PictureRenderData picture = (PictureRenderData) model;
         int suggestFileType = suggestFileType(picture.getPath());
@@ -58,6 +56,12 @@ public class PictureRenderPolicy extends AbstractRenderPolicy {
         
         run.addPicture(ins, suggestFileType, "Generated", picture.getWidth()*EMU,
                 picture.getHeight()*EMU);
+        
+        clearPlaceholder(run);
+    }
+    @Override
+    protected void doRenderException(RunTemplate runTemplate, Object data, Exception e) {
+        runTemplate.getRun().setText(((PictureRenderData) data).getAltMeta(), 0);
     }
 
     public static int suggestFileType(String imgFile) {
@@ -76,7 +80,7 @@ public class PictureRenderPolicy extends AbstractRenderPolicy {
         else if (imgFile.endsWith(".bmp")) format = XWPFDocument.PICTURE_TYPE_BMP;
         else if (imgFile.endsWith(".wpg")) format = XWPFDocument.PICTURE_TYPE_WPG;
         else {
-            logger.error("Unsupported picture: " + imgFile
+            throw new RenderException("Unsupported picture: " + imgFile
                     + ". Expected emf|wmf|pict|jpeg|png|dib|gif|tiff|eps|bmp|wpg");
         }
         return format;
